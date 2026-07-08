@@ -5,7 +5,13 @@ export interface ApiResponse<T = unknown> {
   error?: string;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+function getBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
+    return "https://gatewatch-backend.onrender.com/api";
+  }
+  return "http://localhost:5000/api";
+}
 
 async function request<T>(
   method: string,
@@ -17,7 +23,7 @@ async function request<T>(
   };
 
   try {
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
+    const response = await fetch(`${getBaseUrl()}${endpoint}`, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
