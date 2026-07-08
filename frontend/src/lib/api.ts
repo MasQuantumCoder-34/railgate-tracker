@@ -8,7 +8,7 @@ export interface ApiResponse<T = unknown> {
 function getBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
   if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
-    return "https://gatewatch-backend.onrender.com/api";
+    return "https://railgate-tracker.onrender.com/api";
   }
   return "http://localhost:5000/api";
 }
