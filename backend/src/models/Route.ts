@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { IRouteDocument } from '../types';
+import { IRouteDocument } from '../types/index.js';
 
 const routeSchema = new Schema<IRouteDocument>({
   routeName: {

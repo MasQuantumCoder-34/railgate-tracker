@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { NODE_ENV } from '../config/env';
+import { NODE_ENV } from '../config/env.js';
 
 interface CustomError extends Error {
   statusCode?: number;

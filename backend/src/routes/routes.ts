@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { getAll, create, update, deleteRoute } from '../controllers/routeController';
-import { protect } from '../middleware/auth';
-import { createRouteValidation } from '../middleware/validate';
+import { getAll, create, update, deleteRoute } from '../controllers/routeController.js';
+import { protect } from '../middleware/auth.js';
+import { createRouteValidation } from '../middleware/validate.js';
 
 const router = Router();
 

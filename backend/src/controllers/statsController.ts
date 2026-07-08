@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import GateEvent from '../models/GateEvent';
-import GateStatus from '../models/GateStatus';
-import Feedback from '../models/Feedback';
+import GateEvent from '../models/GateEvent.js';
+import GateStatus from '../models/GateStatus.js';
+import Feedback from '../models/Feedback.js';
 
 export const getPublicStats = async (req: Request, res: Response): Promise<void> => {
   try {

@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import Admin from '../models/Admin';
-import { JWT_SECRET } from '../config/env';
-import { IAdminDocument, JwtPayload } from '../types';
+import Admin from '../models/Admin.js';
+import { JWT_SECRET } from '../config/env.js';
+import { IAdminDocument, JwtPayload } from '../types/index.js';
 
 export const protect = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

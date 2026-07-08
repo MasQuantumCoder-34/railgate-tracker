@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { ITrainDocument } from '../types';
+import { ITrainDocument } from '../types/index.js';
 
 const trainSchema = new Schema<ITrainDocument>({
   trainName: {

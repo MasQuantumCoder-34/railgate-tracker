@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { IFeedbackDocument } from '../types';
+import { IFeedbackDocument } from '../types/index.js';
 
 const feedbackSchema = new Schema<IFeedbackDocument>({
   name: {

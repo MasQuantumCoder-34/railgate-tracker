@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import Admin from '../models/Admin';
-import { JWT_SECRET, JWT_EXPIRES_IN } from '../config/env';
+import Admin from '../models/Admin.js';
+import { JWT_SECRET, JWT_EXPIRES_IN } from '../config/env.js';
 
 interface LoginBody {
   username: string;

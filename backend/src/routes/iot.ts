@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { updateFromSensor, getHealth } from '../controllers/iotController';
-import { validateIotKey } from '../middleware/iotAuth';
+import { updateFromSensor, getHealth } from '../controllers/iotController.js';
+import { validateIotKey } from '../middleware/iotAuth.js';
 
 const router = Router();
 

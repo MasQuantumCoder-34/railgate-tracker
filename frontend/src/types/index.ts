@@ -63,3 +63,13 @@ export interface StatsAdmin {
   gateOpenings: number;
   averageWait: number;
 }
+
+export interface UpcomingTrain {
+  _id: string;
+  trainName: string;
+  trainNumber: string;
+  direction: string;
+  scheduledTime: string;
+  estimatedWait: number;
+  minutesUntil: number;
+}

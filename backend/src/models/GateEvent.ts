@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { IGateEventDocument } from '../types';
+import { IGateEventDocument } from '../types/index.js';
 
 const gateEventSchema = new Schema<IGateEventDocument>({
   status: {

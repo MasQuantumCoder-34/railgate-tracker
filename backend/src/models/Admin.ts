@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { IAdminDocument } from '../types';
+import { IAdminDocument } from '../types/index.js';
 
 const adminSchema = new Schema<IAdminDocument>({
   username: {

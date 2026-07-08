@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import Train from '../models/Train';
+import Train from '../models/Train.js';
 
 export const getAll = async (req: Request, res: Response): Promise<void> => {
   try {

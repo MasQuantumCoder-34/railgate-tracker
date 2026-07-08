@@ -7,18 +7,19 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import connectDatabase from './config/database';
-import { PORT, NODE_ENV } from './config/env';
-import errorHandler from './middleware/errorHandler';
-import { checkAndAutoOpen } from './utils/autoGate';
+import connectDatabase from './config/database.js';
+import { PORT, NODE_ENV } from './config/env.js';
+import errorHandler from './middleware/errorHandler.js';
+import { checkAndAutoOpen } from './utils/autoGate.js';
 
-import authRoutes from './routes/auth';
-import statusRoutes from './routes/status';
-import trainRoutes from './routes/trains';
-import routeRoutes from './routes/routes';
-import feedbackRoutes from './routes/feedback';
-import statsRoutes from './routes/stats';
-import iotRoutes from './routes/iot';
+import authRoutes from './routes/auth.js';
+import statusRoutes from './routes/status.js';
+import trainRoutes from './routes/trains.js';
+import routeRoutes from './routes/routes.js';
+import feedbackRoutes from './routes/feedback.js';
+import statsRoutes from './routes/stats.js';
+import iotRoutes from './routes/iot.js';
+import scheduleRoutes from './routes/schedule.js';
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.use('/api/routes', routeRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/iot', iotRoutes);
+app.use('/api/schedule', scheduleRoutes);
 
 app.use(errorHandler);
 

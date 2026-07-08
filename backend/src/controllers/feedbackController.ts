@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import Feedback from '../models/Feedback';
+import Feedback from '../models/Feedback.js';
 
 export const getAll = async (req: Request, res: Response): Promise<void> => {
   try {

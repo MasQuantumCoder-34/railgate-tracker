@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { getCurrentStatus, getRecentUpdates, updateStatus } from '../controllers/statusController';
-import { protect } from '../middleware/auth';
-import { gateStatusValidation } from '../middleware/validate';
+import { getCurrentStatus, getRecentUpdates, updateStatus } from '../controllers/statusController.js';
+import { protect } from '../middleware/auth.js';
+import { gateStatusValidation } from '../middleware/validate.js';
 
 const router = Router();
 

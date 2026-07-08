@@ -15,6 +15,7 @@ import {
   X,
   Gauge,
   Radio,
+  CalendarClock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,6 +26,7 @@ const sidebarLinks = [
   { href: "/admin/routes", label: "Routes", icon: MapPin },
   { href: "/admin/history", label: "History", icon: History },
   { href: "/admin/feedback", label: "Feedback", icon: MessageSquare },
+  { href: "/admin/schedule", label: "Train Schedule", icon: CalendarClock },
   { href: "/admin/iot", label: "IoT Settings", icon: Radio },
 ];
 

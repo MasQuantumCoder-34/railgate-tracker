@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { IGateStatusDocument } from '../types';
+import { IGateStatusDocument } from '../types/index.js';
 
 const gateStatusSchema = new Schema<IGateStatusDocument>({
   status: {

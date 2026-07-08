@@ -5,8 +5,8 @@ import mongoose from 'mongoose';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
-import { MONGODB_URI, ADMIN_USERNAME, ADMIN_PASSWORD } from '../config/env';
-import Admin from '../models/Admin';
+import { MONGODB_URI, ADMIN_USERNAME, ADMIN_PASSWORD } from '../config/env.js';
+import Admin from '../models/Admin.js';
 
 const seedAdmin = async (): Promise<void> => {
   try {

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import GateStatus from '../models/GateStatus';
-import GateEvent from '../models/GateEvent';
+import GateStatus from '../models/GateStatus.js';
+import GateEvent from '../models/GateEvent.js';
+import { checkAndAutoOpen, cancelAutoOpen } from '../utils/autoGate.js';
 
 export const updateFromSensor = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -33,6 +34,12 @@ export const updateFromSensor = async (req: Request, res: Response): Promise<voi
       notes: notes || undefined,
       timestamp: new Date(),
     });
+
+    if (status === 'CLOSED') {
+      checkAndAutoOpen();
+    } else {
+      cancelAutoOpen();
+    }
 
     res.status(201).json({
       success: true,
