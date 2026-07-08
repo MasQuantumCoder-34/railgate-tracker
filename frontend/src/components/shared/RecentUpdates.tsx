@@ -56,9 +56,10 @@ export function RecentUpdates({ updates }: RecentUpdatesProps) {
                   </span>
                 )}
               </div>
-              {update.trainName && (
+              {update.status === "CLOSED" && (
                 <p className="text-sm mt-0.5">
-                  {update.trainName} ({update.trainNumber})
+                  {update.trainName || "Goods Train"}
+                  {update.trainNumber ? ` (${update.trainNumber})` : ""}
                 </p>
               )}
             </div>

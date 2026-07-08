@@ -8,13 +8,9 @@ const DEMO_TRAINS = [
   { name: 'Jolarpettai Passenger', number: '56701', direction: 'up', wait: 5 },
   { name: 'Jolarpettai Passenger', number: '56702', direction: 'down', wait: 5 },
   { name: 'Bangalore Express', number: '16525', direction: 'up', wait: 10 },
-  { name: 'Bangalore Express', number: '16526', direction: 'down', wait: 10 },
   { name: 'Chennai Mail', number: '12677', direction: 'up', wait: 12 },
-  { name: 'Chennai Mail', number: '12678', direction: 'down', wait: 12 },
-  { name: 'KSR Bengaluru Express', number: '12691', direction: 'up', wait: 10 },
-  { name: 'KSR Bengaluru Express', number: '12692', direction: 'down', wait: 10 },
-  { name: 'Tirupati Passenger', number: '57431', direction: 'up', wait: 6 },
-  { name: 'Tirupati Passenger', number: '57432', direction: 'down', wait: 6 },
+  { name: 'Goods Train', number: 'G-001', direction: 'up', wait: 15 },
+  { name: 'Goods Train', number: 'G-002', direction: 'down', wait: 12 },
 ];
 
 const scheduleTimes = [

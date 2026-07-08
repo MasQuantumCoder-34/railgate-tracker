@@ -10,13 +10,13 @@ const DEMO_INTERVAL_MAX = 3;
 
 const DEMO_TRAINS = [
   { name: 'Yelagiri Express', number: '16181', wait: 8 },
+  { name: 'Yelagiri Express', number: '16182', wait: 8 },
   { name: 'Jolarpettai Passenger', number: '56701', wait: 5 },
+  { name: 'Jolarpettai Passenger', number: '56702', wait: 5 },
   { name: 'Bangalore Express', number: '16525', wait: 10 },
   { name: 'Chennai Mail', number: '12677', wait: 12 },
-  { name: 'Tirupati Passenger', number: '57431', wait: 6 },
-  { name: 'KSR Bengaluru Express', number: '12691', wait: 10 },
-  { name: 'Shatabdi Express', number: '12027', wait: 7 },
-  { name: 'Mysuru Express', number: '16221', wait: 9 },
+  { name: 'Goods Train', number: 'G-001', wait: 15 },
+  { name: 'Goods Train', number: 'G-002', wait: 12 },
 ];
 
 let intervalHandle: ReturnType<typeof setInterval> | null = null;

@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   Clock,
   ToggleLeft,
+  Train,
 } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 import type { GateStatus, GateUpdate, StatsAdmin } from "@/types";
@@ -32,6 +33,7 @@ export default function AdminDashboardPage() {
 
   const [showForm, setShowForm] = useState(false);
   const [toggling, setToggling] = useState(false);
+  const [isGoodsTrain, setIsGoodsTrain] = useState(false);
   const [form, setForm] = useState({
     waitTime: "",
     trainName: "",
@@ -66,16 +68,16 @@ export default function AdminDashboardPage() {
     const body: Record<string, unknown> = { status: newStatus };
 
     if (newStatus === "CLOSED") {
-      if (!form.waitTime || !form.trainName || !form.trainNumber) {
-        toast("error", "Please fill in wait time, train name, and number");
+      if (!form.waitTime) {
+        toast("error", "Please enter wait time");
         setToggling(false);
         return;
       }
       body.waitTime = parseInt(form.waitTime);
-      body.trainName = form.trainName;
-      body.trainNumber = form.trainNumber;
+      body.trainName = isGoodsTrain ? "Goods Train" : form.trainName || undefined;
+      body.trainNumber = isGoodsTrain ? "XXXX" : form.trainNumber || undefined;
       body.direction = form.direction;
-      body.notes = form.notes;
+      body.notes = form.notes || (isGoodsTrain ? "Goods train passing" : undefined);
       body.trainsInQueue = parseInt(form.trainsInQueue) || 1;
     }
 
@@ -85,6 +87,7 @@ export default function AdminDashboardPage() {
     if (res.success) {
       toast("success", `Gate ${newStatus}`);
       setForm({ waitTime: "", trainName: "", trainNumber: "", direction: "up", notes: "", trainsInQueue: "1" });
+      setIsGoodsTrain(false);
       setShowForm(false);
       fetchData();
     } else {
@@ -193,22 +196,48 @@ export default function AdminDashboardPage() {
                 onChange={(e) => setForm({ ...form, waitTime: e.target.value })}
                 placeholder="e.g. 15"
               />
-              <Input
-                label="Train Name"
-                value={form.trainName}
-                onChange={(e) =>
-                  setForm({ ...form, trainName: e.target.value })
-                }
-                placeholder="e.g. Chennai Express"
-              />
-              <Input
-                label="Train Number"
-                value={form.trainNumber}
-                onChange={(e) =>
-                  setForm({ ...form, trainNumber: e.target.value })
-                }
-                placeholder="e.g. 12345"
-              />
+              <div className="flex items-center gap-2 sm:col-span-2">
+                <Button
+                  type="button"
+                  variant={isGoodsTrain ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => {
+                    setIsGoodsTrain(!isGoodsTrain);
+                    if (!isGoodsTrain) {
+                      setForm({ ...form, trainName: "", trainNumber: "" });
+                    }
+                  }}
+                  className="gap-2"
+                >
+                  <Train className="h-4 w-4" />
+                  {isGoodsTrain ? "Goods Train" : "Passenger Train"}
+                </Button>
+                {isGoodsTrain && (
+                  <span className="text-sm text-[hsl(var(--muted-foreground))]">
+                    Train name/number not required for goods trains
+                  </span>
+                )}
+              </div>
+              {!isGoodsTrain && (
+                <>
+                  <Input
+                    label="Train Name"
+                    value={form.trainName}
+                    onChange={(e) =>
+                      setForm({ ...form, trainName: e.target.value })
+                    }
+                    placeholder="e.g. Chennai Express"
+                  />
+                  <Input
+                    label="Train Number"
+                    value={form.trainNumber}
+                    onChange={(e) =>
+                      setForm({ ...form, trainNumber: e.target.value })
+                    }
+                    placeholder="e.g. 12345"
+                  />
+                </>
+              )}
               <Select
                 label="Direction"
                 value={form.direction}
@@ -293,8 +322,8 @@ export default function AdminDashboardPage() {
                         {update.waitTime ? `${update.waitTime} min` : "-"}
                       </td>
                       <td className="py-2 px-3">
-                        {update.trainName
-                          ? `${update.trainName} (${update.trainNumber || ""})`
+                        {update.status === "CLOSED"
+                          ? `${update.trainName || "Goods Train"}${update.trainNumber ? ` (${update.trainNumber})` : ""}`
                           : "-"}
                       </td>
                       <td className="py-2 px-3 text-[hsl(var(--muted-foreground))]">
