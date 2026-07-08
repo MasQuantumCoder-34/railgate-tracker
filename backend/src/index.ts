@@ -6,13 +6,13 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
 import connectDatabase from './config/database.js';
 import { PORT, NODE_ENV } from './config/env.js';
 import errorHandler from './middleware/errorHandler.js';
 import { checkAndAutoOpen } from './utils/autoGate.js';
+import { seedIfEmpty } from './utils/autoSeed.js';
+import { startAutoPilot } from './services/autoPilot.js';
 
-import authRoutes from './routes/auth.js';
 import statusRoutes from './routes/status.js';
 import trainRoutes from './routes/trains.js';
 import routeRoutes from './routes/routes.js';
@@ -39,19 +39,6 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  message: {
-    success: false,
-    message: 'Too many login attempts, please try again after 15 minutes',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-app.use('/api/auth/login', authLimiter);
-
 app.get('/api/health', (_req, res) => {
   res.status(200).json({
     success: true,
@@ -61,7 +48,6 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-app.use('/api/auth', authRoutes);
 app.use('/api/status', statusRoutes);
 app.use('/api/trains', trainRoutes);
 app.use('/api/routes', routeRoutes);
@@ -74,7 +60,9 @@ app.use(errorHandler);
 
 const server = app.listen(PORT, () => {
   console.log(`GateWatch API running on port ${PORT} in ${NODE_ENV} mode`);
+  seedIfEmpty();
   checkAndAutoOpen();
+  startAutoPilot();
 });
 
 process.on('unhandledRejection', (err: Error) => {

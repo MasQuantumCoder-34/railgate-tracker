@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
@@ -10,7 +10,6 @@ import {
   MapPin,
   History,
   MessageSquare,
-  LogOut,
   Menu,
   X,
   Gauge,
@@ -18,7 +17,6 @@ import {
   CalendarClock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const sidebarLinks = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -35,41 +33,8 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
   const pathname = usePathname();
-  const [checking, setChecking] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const isLoginPage = pathname === "/admin/login";
-
-  useEffect(() => {
-    if (isLoginPage) {
-      setChecking(false);
-      return;
-    }
-    const token = localStorage.getItem("gw_token");
-    if (!token) {
-      router.push("/admin/login");
-    } else {
-      setChecking(false);
-    }
-  }, [router, isLoginPage]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("gw_token");
-    router.push("/admin/login");
-  };
-
-  if (isLoginPage) {
-    return <>{children}</>;
-  }
-
-  if (checking) {
-    return (
-      <div className="container mx-auto px-4 py-16">
-        <Skeleton className="h-96 w-full rounded-xl" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex">
@@ -82,7 +47,7 @@ export default function AdminLayout({
         <div className="flex h-full flex-col">
           <div className="flex items-center gap-2 px-6 py-4 border-b border-[hsl(var(--border))]">
             <Gauge className="h-5 w-5 text-brand-500" />
-            <span className="font-semibold">Admin Panel</span>
+            <span className="font-semibold">Management</span>
           </div>
           <nav className="flex-1 space-y-1 p-4">
             {sidebarLinks.map((link) => (
@@ -102,16 +67,6 @@ export default function AdminLayout({
               </Link>
             ))}
           </nav>
-          <div className="p-4 border-t border-[hsl(var(--border))]">
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-[hsl(var(--muted-foreground))]"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </div>
         </div>
       </aside>
 

@@ -13,6 +13,7 @@ const navLinks = [
   { href: "/search", label: "Search" },
   { href: "/statistics", label: "Statistics" },
   { href: "/contact", label: "Contact" },
+  { href: "/admin/dashboard", label: "Management" },
 ];
 
 export function Navbar() {

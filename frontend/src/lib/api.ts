@@ -16,12 +16,6 @@ async function request<T>(
     "Content-Type": "application/json",
   };
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("gw_token") : null;
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       method,
