@@ -5,8 +5,8 @@ import { checkAndAutoOpen } from '../utils/autoGate.js';
 
 const CHECK_INTERVAL = 30_000;
 const CLOSE_AHEAD_MINUTES = 3;
-const DEMO_INTERVAL_MIN = 3;
-const DEMO_INTERVAL_MAX = 8;
+const DEMO_INTERVAL_MIN = 1;
+const DEMO_INTERVAL_MAX = 3;
 
 const DEMO_TRAINS = [
   { name: 'Yelagiri Express', number: '16181', wait: 8 },

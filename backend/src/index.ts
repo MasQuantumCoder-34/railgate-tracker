@@ -27,9 +27,23 @@ connectDatabase();
 
 app.use(helmet());
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://gatewatch-vaniyambadi.vercel.app',
+  'https://gatewatch.vercel.app',
+  ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(s => s.trim()) : []),
+];
+
 app.use(
   cors({
-    origin: NODE_ENV === 'production' ? process.env.CORS_ORIGIN || 'https://yourdomain.com' : '*',
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || NODE_ENV !== 'production') {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
