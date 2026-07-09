@@ -1,5 +1,5 @@
 import GateStatus from '../models/GateStatus.js';
-import GateEvent from '../models/GateEvent.js';
+import GateClosure from '../models/GateClosure.js';
 import TrainSchedule from '../models/TrainSchedule.js';
 
 const DEMO_TRAINS = [
@@ -21,7 +21,7 @@ const scheduleTimes = [
 
 export const seedIfEmpty = async (): Promise<void> => {
   try {
-    const count = await GateEvent.countDocuments();
+    const count = await GateClosure.countDocuments();
     if (count > 0) return;
 
     console.log('Empty database detected — seeding demo data...');
@@ -40,31 +40,26 @@ export const seedIfEmpty = async (): Promise<void> => {
     }
 
     const now = new Date();
-    for (let i = 12; i >= 0; i--) {
-      const isOpen = i % 2 === 0;
+    for (let i = 6; i >= 0; i--) {
       const train = DEMO_TRAINS[i % DEMO_TRAINS.length];
-      const timestamp = new Date(now.getTime() - i * 6 * 60 * 1000);
+      const closedAt = new Date(now.getTime() - i * 12 * 60 * 1000 - 5 * 60 * 1000);
+      const openedAt = new Date(now.getTime() - i * 12 * 60 * 1000);
+      const duration = Math.round((openedAt.getTime() - closedAt.getTime()) / 60000);
 
       await GateStatus.create({
-        status: isOpen ? 'OPEN' : 'CLOSED',
-        waitTime: isOpen ? 0 : train.wait,
-        trainName: isOpen ? undefined : train.name,
-        trainNumber: isOpen ? undefined : train.number,
-        direction: isOpen ? undefined : train.direction,
-        notes: isOpen ? undefined : `Train ${train.number}`,
-        trainsInQueue: isOpen ? 0 : 1,
-        updatedAt: timestamp,
+        status: 'OPEN',
+        waitTime: 0,
+        updatedAt: openedAt,
       });
 
-      await GateEvent.create({
-        status: isOpen ? 'OPEN' : 'CLOSED',
-        waitTime: isOpen ? 0 : train.wait,
-        trainName: isOpen ? undefined : train.name,
-        trainNumber: isOpen ? undefined : train.number,
-        direction: isOpen ? undefined : train.direction,
-        notes: isOpen ? undefined : `Train ${train.number}`,
-        trainsInQueue: isOpen ? 0 : 1,
-        timestamp,
+      await GateClosure.create({
+        trainName: train.name,
+        trainNumber: train.number,
+        direction: train.direction,
+        closedAt,
+        openedAt,
+        durationMinutes: duration,
+        isActive: false,
       });
     }
 

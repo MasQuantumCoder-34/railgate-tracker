@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import GateEvent from '../models/GateEvent.js';
-import GateStatus from '../models/GateStatus.js';
+import GateClosure from '../models/GateClosure.js';
 import Feedback from '../models/Feedback.js';
 
 export const getPublicStats = async (req: Request, res: Response): Promise<void> => {
@@ -11,50 +10,41 @@ export const getPublicStats = async (req: Request, res: Response): Promise<void>
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const todayClosures = await GateEvent.countDocuments({
-      status: 'CLOSED',
-      timestamp: { $gte: todayStart },
+    const todayClosures = await GateClosure.countDocuments({
+      closedAt: { $gte: todayStart },
     });
 
-    const todayEvents = await GateEvent.find({
-      status: 'CLOSED',
-      timestamp: { $gte: todayStart },
+    const todayClosureDocs = await GateClosure.find({
+      closedAt: { $gte: todayStart },
     });
 
     let avgWaitToday = 0;
     let longestWaitToday = 0;
     let shortestWaitToday = 0;
 
-    if (todayEvents.length > 0) {
-      const waitTimes = todayEvents.map((e) => e.waitTime || 0);
-      const totalWait = waitTimes.reduce((sum, w) => sum + w, 0);
-      avgWaitToday = Math.round(totalWait / waitTimes.length);
-      longestWaitToday = Math.max(...waitTimes);
-      shortestWaitToday = Math.min(...waitTimes);
+    if (todayClosureDocs.length > 0) {
+      const durations = todayClosureDocs.map((c) => c.durationMinutes || 0);
+      const total = durations.reduce((sum, d) => sum + d, 0);
+      avgWaitToday = Math.round(total / durations.length);
+      longestWaitToday = Math.max(...durations);
+      shortestWaitToday = Math.min(...durations);
     }
 
-    const weeklyClosures = await GateEvent.countDocuments({
-      status: 'CLOSED',
-      timestamp: { $gte: weekStart },
+    const weeklyClosures = await GateClosure.countDocuments({
+      closedAt: { $gte: weekStart },
     });
 
-    const monthlyClosures = await GateEvent.countDocuments({
-      status: 'CLOSED',
-      timestamp: { $gte: monthStart },
+    const monthlyClosures = await GateClosure.countDocuments({
+      closedAt: { $gte: monthStart },
     });
 
-    const dailyAggregation = await GateEvent.aggregate([
-      {
-        $match: {
-          timestamp: { $gte: todayStart },
-        },
-      },
+    const dailyAggregation = await GateClosure.aggregate([
+      { $match: { closedAt: { $gte: todayStart } } },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
-          closures: { $sum: { $cond: [{ $eq: ['$status', 'CLOSED'] }, 1, 0] } },
-          openings: { $sum: { $cond: [{ $eq: ['$status', 'OPEN'] }, 1, 0] } },
-          avgWait: { $avg: '$waitTime' },
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$closedAt' } },
+          closures: { $sum: 1 },
+          avgWait: { $avg: '$durationMinutes' },
         },
       },
       { $sort: { _id: -1 } },
@@ -86,33 +76,28 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    const todayTotalUpdates = await GateEvent.countDocuments({
-      timestamp: { $gte: todayStart },
+    const todayTotalClosures = await GateClosure.countDocuments({
+      closedAt: { $gte: todayStart },
     });
 
-    const todayClosures = await GateEvent.countDocuments({
-      status: 'CLOSED',
-      timestamp: { $gte: todayStart },
+    const todayCompleted = await GateClosure.countDocuments({
+      closedAt: { $gte: todayStart },
+      isActive: false,
     });
 
-    const todayOpenings = await GateEvent.countDocuments({
-      status: 'OPEN',
-      timestamp: { $gte: todayStart },
-    });
-
-    const todayClosedEvents = await GateEvent.find({
-      status: 'CLOSED',
-      timestamp: { $gte: todayStart },
+    const todayClosedDocs = await GateClosure.find({
+      closedAt: { $gte: todayStart },
+      isActive: false,
     });
 
     let avgWaitToday = 0;
-    if (todayClosedEvents.length > 0) {
-      const totalWait = todayClosedEvents.reduce((sum, e) => sum + (e.waitTime || 0), 0);
-      avgWaitToday = Math.round(totalWait / todayClosedEvents.length);
+    if (todayClosedDocs.length > 0) {
+      const total = todayClosedDocs.reduce((sum, c) => sum + (c.durationMinutes || 0), 0);
+      avgWaitToday = Math.round(total / todayClosedDocs.length);
     }
 
-    const totalClosuresAllTime = await GateEvent.countDocuments({ status: 'CLOSED' });
-    const totalOpeningsAllTime = await GateEvent.countDocuments({ status: 'OPEN' });
+    const totalClosures = await GateClosure.countDocuments({});
+    const totalCompleted = await GateClosure.countDocuments({ isActive: false });
     const totalFeedbacks = await Feedback.countDocuments();
     const unresolvedFeedbacks = await Feedback.countDocuments({ resolved: false });
 
@@ -120,14 +105,13 @@ export const getAdminStats = async (req: Request, res: Response): Promise<void> 
       success: true,
       data: {
         today: {
-          totalUpdates: todayTotalUpdates,
-          closures: todayClosures,
-          openings: todayOpenings,
+          totalClosures: todayTotalClosures,
+          completed: todayCompleted,
           avgWait: avgWaitToday,
         },
         allTime: {
-          totalClosures: totalClosuresAllTime,
-          totalOpenings: totalOpeningsAllTime,
+          totalClosures,
+          totalCompleted,
           totalFeedbacks,
           unresolvedFeedbacks,
         },

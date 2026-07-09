@@ -100,10 +100,10 @@ export function UpcomingTrains({ trains }: UpcomingTrainsProps) {
                       ? "Due"
                       : `${train.minutesUntil}m`}
                   </p>
-                  <p className="text-xs text-[hsl(var(--muted-foreground))] flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {train.scheduledTime}
-                  </p>
+                   <p className="text-xs text-[hsl(var(--muted-foreground))] flex items-center gap-1">
+                     <Clock className="h-3 w-3" />
+                     {train.day && train.day !== 'Today' ? `${train.day} ` : ''}{train.scheduledTime}
+                   </p>
                 </div>
               </div>
             );

@@ -1,7 +1,8 @@
 import TrainSchedule from '../models/TrainSchedule.js';
 import GateStatus from '../models/GateStatus.js';
-import GateEvent from '../models/GateEvent.js';
+import GateClosure from '../models/GateClosure.js';
 import { checkAndAutoOpen } from '../utils/autoGate.js';
+import { fetchApproachingTrains } from './railTracker.js';
 
 const CHECK_INTERVAL = 30_000;
 const CLOSE_AHEAD_MINUTES = 3;
@@ -47,9 +48,20 @@ const runCheck = async (): Promise<void> => {
     const latestStatus = await GateStatus.findOne().sort({ updatedAt: -1 });
     const isCurrentlyOpen = !latestStatus || latestStatus.status === 'OPEN';
 
+    if (isCurrentlyOpen) {
+      const approaching = await fetchApproachingTrains();
+      if (approaching.length > 0) {
+        const closest = approaching[0];
+        await closeGate(closest.trainName, closest.trainNumber, closest.direction, 10);
+        checkAndAutoOpen();
+        return;
+      }
+    }
+
+    const currentDayAlt = currentDay === 0 ? 7 : currentDay;
     const todaySchedules = await TrainSchedule.find({
       active: true,
-      daysOfWeek: currentDay,
+      daysOfWeek: { $in: [currentDay, currentDayAlt] },
     }).sort({ scheduledTime: 1 });
 
     if (todaySchedules.length > 0) {
@@ -59,13 +71,7 @@ const runCheck = async (): Promise<void> => {
         const diffMinutes = scheduledMinutes - currentMinutes;
 
         if (diffMinutes > 0 && diffMinutes <= CLOSE_AHEAD_MINUTES && isCurrentlyOpen) {
-          await closeGate({
-            trainName: schedule.trainName,
-            trainNumber: schedule.trainNumber,
-            direction: schedule.direction,
-            waitTime: schedule.estimatedWait,
-            notes: `Auto-closed for ${schedule.trainName}`,
-          });
+          await closeGate(schedule.trainName, schedule.trainNumber, schedule.direction, schedule.estimatedWait);
           checkAndAutoOpen();
           break;
         }
@@ -78,13 +84,7 @@ const runCheck = async (): Promise<void> => {
       if (minutesSinceLastClose >= DEMO_INTERVAL_MAX) {
         const train = DEMO_TRAINS[randInt(0, DEMO_TRAINS.length - 1)];
         const direction = Math.random() > 0.5 ? 'up' : 'down';
-        await closeGate({
-          trainName: train.name,
-          trainNumber: train.number,
-          direction,
-          waitTime: train.wait,
-          notes: `Demo: ${train.name} passing`,
-        });
+        await closeGate(train.name, train.number, direction, train.wait);
         checkAndAutoOpen();
       }
     }
@@ -93,36 +93,29 @@ const runCheck = async (): Promise<void> => {
   }
 };
 
-const closeGate = async (data: {
-  trainName: string;
-  trainNumber: string;
-  direction: string;
-  waitTime: number;
-  notes: string;
-}): Promise<void> => {
-  lastDemoClose = new Date();
+const closeGate = async (trainName: string, trainNumber: string, direction: string, waitTime: number): Promise<void> => {
+  const now = new Date();
+  lastDemoClose = now;
 
   await GateStatus.create({
     status: 'CLOSED',
-    waitTime: data.waitTime,
-    trainName: data.trainName,
-    trainNumber: data.trainNumber,
-    direction: data.direction,
-    notes: data.notes,
+    waitTime,
+    trainName,
+    trainNumber,
+    direction,
+    notes: `Auto-closed for ${trainName}`,
     trainsInQueue: 1,
-    updatedAt: new Date(),
+    updatedAt: now,
   });
 
-  await GateEvent.create({
-    status: 'CLOSED',
-    waitTime: data.waitTime,
-    trainName: data.trainName,
-    trainNumber: data.trainNumber,
-    direction: data.direction,
-    notes: data.notes,
-    trainsInQueue: 1,
-    timestamp: new Date(),
+  await GateClosure.create({
+    trainName,
+    trainNumber,
+    direction,
+    closedAt: now,
+    durationMinutes: waitTime,
+    isActive: true,
   });
 
-  console.log(`AutoPilot: Gate closed for ${data.trainName} (${data.trainNumber})`);
+  console.log(`AutoPilot: Gate closed for ${trainName} (${trainNumber})`);
 };

@@ -4,19 +4,39 @@ import TrainSchedule from '../models/TrainSchedule.js';
 export const getUpcoming = async (_req: Request, res: Response): Promise<void> => {
   try {
     const now = new Date();
-    const currentHour = now.getHours().toString().padStart(2, '0');
-    const currentMin = now.getMinutes().toString().padStart(2, '0');
-    const currentTimeStr = `${currentHour}:${currentMin}`;
-    const todayDay = now.getDay() || 7; // Convert Sunday=0 to 7 for easier matching
+    const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    const todayDay = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
 
-    const schedules = await TrainSchedule.find({
+    // Support both 0..6 (new) and 1..7 (legacy seed) day formats
+    const todayDayAlt = todayDay === 0 ? 7 : todayDay;
+
+    let schedules = await TrainSchedule.find({
       active: true,
-      daysOfWeek: todayDay,
+      daysOfWeek: { $in: [todayDay, todayDayAlt] },
       scheduledTime: { $gte: currentTimeStr },
     })
       .sort({ scheduledTime: 1 })
       .limit(5);
 
+    let dayOffset = 0;
+    if (schedules.length === 0) {
+      for (let offset = 1; offset <= 7; offset++) {
+        const nextDay = (todayDay + offset) % 7;
+        const nextDayAlt = nextDay === 0 ? 7 : nextDay;
+        schedules = await TrainSchedule.find({
+          active: true,
+          daysOfWeek: { $in: [nextDay, nextDayAlt] },
+        })
+          .sort({ scheduledTime: 1 })
+          .limit(5);
+        if (schedules.length > 0) {
+          dayOffset = offset;
+          break;
+        }
+      }
+    }
+
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const upcoming = schedules.map((s) => ({
       _id: s._id,
       trainName: s.trainName,
@@ -24,7 +44,8 @@ export const getUpcoming = async (_req: Request, res: Response): Promise<void> =
       direction: s.direction,
       scheduledTime: s.scheduledTime,
       estimatedWait: s.estimatedWait,
-      minutesUntil: getMinutesUntil(s.scheduledTime),
+      minutesUntil: getMinutesUntil(s.scheduledTime, dayOffset),
+      day: dayOffset === 0 ? 'Today' : dayOffset === 1 ? 'Tomorrow' : dayNames[(todayDay + dayOffset) % 7],
     }));
 
     res.status(200).json({
@@ -84,10 +105,10 @@ export const remove = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-function getMinutesUntil(scheduledTime: string): number {
+function getMinutesUntil(scheduledTime: string, daysAhead: number = 0): number {
   const [h, m] = scheduledTime.split(':').map(Number);
-  const now = new Date();
-  const scheduled = new Date(now);
+  const scheduled = new Date();
+  scheduled.setDate(scheduled.getDate() + daysAhead);
   scheduled.setHours(h, m, 0, 0);
-  return Math.round((scheduled.getTime() - now.getTime()) / 60000);
+  return Math.round((scheduled.getTime() - Date.now()) / 60000);
 }

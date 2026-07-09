@@ -10,3 +10,5 @@ export const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 export const NODE_ENV = process.env.NODE_ENV || 'development';
 export const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+export const RAILRADAR_API_KEY = process.env.RAILRADAR_API_KEY || '';
+export const RAILRADAR_API_URL = process.env.RAILRADAR_API_URL || 'https://api.railradar.in/v1';

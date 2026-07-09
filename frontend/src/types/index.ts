@@ -9,6 +9,8 @@ export interface GateStatus {
   trainsInQueue?: number;
   updatedAt: string;
   createdAt: string;
+  todayClosures?: number;
+  activeClosure?: GateClosure | null;
 }
 
 export interface GateUpdate {
@@ -23,12 +25,15 @@ export interface GateUpdate {
   timestamp: string;
 }
 
-export interface Train {
+export interface GateClosure {
   _id: string;
   trainName: string;
   trainNumber: string;
-  route: string;
   direction: string;
+  closedAt: string;
+  openedAt?: string;
+  durationMinutes: number;
+  isActive: boolean;
 }
 
 export interface Route {
@@ -45,6 +50,14 @@ export interface Feedback {
   message: string;
   resolved: boolean;
   createdAt: string;
+}
+
+export interface Train {
+  _id: string;
+  trainName: string;
+  trainNumber: string;
+  route: string;
+  direction: string;
 }
 
 export interface StatsPublic {
@@ -72,4 +85,5 @@ export interface UpcomingTrain {
   scheduledTime: string;
   estimatedWait: number;
   minutesUntil: number;
+  day?: string;
 }

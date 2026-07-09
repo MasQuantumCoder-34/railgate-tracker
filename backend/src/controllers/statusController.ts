@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import GateStatus from '../models/GateStatus.js';
-import GateEvent from '../models/GateEvent.js';
+import GateClosure from '../models/GateClosure.js';
 import { checkAndAutoOpen, cancelAutoOpen } from '../utils/autoGate.js';
 
 export const getCurrentStatus = async (req: Request, res: Response): Promise<void> => {
@@ -20,13 +20,17 @@ export const getCurrentStatus = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
 
-    const todayClosures = await GateEvent.countDocuments({
-      status: 'CLOSED',
-      timestamp: { $gte: today },
+    const todayClosures = await GateClosure.countDocuments({
+      closedAt: { $gte: todayStart },
     });
+
+    let activeClosure = null;
+    if (latestStatus.status === 'CLOSED') {
+      activeClosure = await GateClosure.findOne({ isActive: true }).sort({ closedAt: -1 });
+    }
 
     res.status(200).json({
       success: true,
@@ -40,6 +44,7 @@ export const getCurrentStatus = async (req: Request, res: Response): Promise<voi
         notes: latestStatus.notes,
         updatedAt: latestStatus.updatedAt,
         todayClosures,
+        activeClosure,
       },
     });
   } catch (error) {
@@ -65,20 +70,28 @@ export const updateStatus = async (req: Request, res: Response): Promise<void> =
       updatedAt: new Date(),
     });
 
-    await GateEvent.create({
-      status,
-      waitTime: status === 'CLOSED' ? (waitTime || 0) : 0,
-      trainName: status === 'CLOSED' ? trainName : undefined,
-      trainNumber: status === 'CLOSED' ? trainNumber : undefined,
-      direction: status === 'CLOSED' ? direction : undefined,
-      notes: notes || undefined,
-      trainsInQueue: status === 'CLOSED' ? (trainsInQueue ?? 1) : 0,
-      timestamp: new Date(),
-    });
+    const now = new Date();
 
     if (status === 'CLOSED') {
+      const expectedMinutes = waitTime || 10;
+      await GateClosure.create({
+        trainName: trainName || 'Train',
+        trainNumber: trainNumber || '',
+        direction: direction || 'up',
+        closedAt: now,
+        durationMinutes: expectedMinutes,
+        isActive: true,
+      });
       checkAndAutoOpen();
     } else {
+      await GateClosure.findOneAndUpdate(
+        { isActive: true },
+        {
+          openedAt: now,
+          isActive: false,
+        },
+        { sort: { closedAt: -1 } }
+      );
       cancelAutoOpen();
     }
 
@@ -95,23 +108,23 @@ export const updateStatus = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-export const getRecentUpdates = async (req: Request, res: Response): Promise<void> => {
+export const getRecentClosures = async (req: Request, res: Response): Promise<void> => {
   try {
-    const limit = parseInt(req.query.limit as string) || 20;
+    const limit = parseInt(req.query.limit as string) || 10;
 
-    const events = await GateEvent.find()
-      .sort({ timestamp: -1 })
-      .limit(Math.min(limit, 100));
+    const closures = await GateClosure.find()
+      .sort({ closedAt: -1 })
+      .limit(Math.min(limit, 50));
 
     res.status(200).json({
       success: true,
-      data: events,
-      count: events.length,
+      data: closures,
+      count: closures.length,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error fetching recent updates',
+      message: 'Server error fetching recent closures',
     });
   }
 };

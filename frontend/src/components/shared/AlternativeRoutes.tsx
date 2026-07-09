@@ -1,73 +1,55 @@
 "use client";
 
-import { MapPin } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "./EmptyState";
+import { MapPin, Clock } from "lucide-react";
 import type { Route } from "@/types";
 
 interface AlternativeRoutesProps {
   routes: Route[];
   gateClosed?: boolean;
+  showEmpty?: boolean;
 }
 
 export function AlternativeRoutes({
   routes,
   gateClosed = false,
+  showEmpty = true,
 }: AlternativeRoutesProps) {
-  if (!routes || routes.length === 0) {
-    return null;
-  }
-
   const activeRoutes = routes.filter((r) => r.status === "active");
 
-  if (activeRoutes.length === 0) {
+  if (!activeRoutes.length) {
+    if (!showEmpty) return null;
     return (
-      <EmptyState
-        icon={MapPin}
-        title="No Routes Available"
-        description="No alternative routes are currently available."
-      />
+      <div className="rounded-xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] px-5 py-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-1">
+          Alternative Routes
+        </p>
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">No routes available</p>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-lg font-semibold">
-        {gateClosed ? "Alternative Routes" : "Available Routes"}
-      </h3>
+    <div className="rounded-xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] px-5 py-4">
+      <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-3">
+        {gateClosed ? "Alternative Routes" : "Routes"}
+      </p>
       {gateClosed && (
-        <p className="text-sm text-amber-500 dark:text-amber-400">
-          The gate is closed. Consider using these alternative routes.
+        <p className="text-xs text-amber-600 dark:text-amber-400 mb-3 font-medium">
+          \u26A0\uFE0F Gate closed - consider a detour
         </p>
       )}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="space-y-2">
         {activeRoutes.map((route) => (
-          <Card
-            key={route._id}
-            className={
-              gateClosed
-                ? "border-amber-200 dark:border-amber-800"
-                : undefined
-            }
-          >
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-brand-500" />
-                  <span className="font-medium">{route.routeName}</span>
-                </div>
-                <Badge
-                  variant={route.status === "active" ? "success" : "secondary"}
-                >
-                  {route.status}
-                </Badge>
-              </div>
-              <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
-                Distance: {route.distance} km
-              </p>
-            </CardContent>
-          </Card>
+          <div key={route._id} className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 shrink-0 text-[hsl(var(--muted-foreground))]" />
+              <span className="text-sm font-medium">{route.routeName}</span>
+            </div>
+            <div className="flex items-center gap-1 text-xs text-[hsl(var(--muted-foreground))]">
+              <Clock className="h-3 w-3" />
+              <span>{route.distance}</span>
+            </div>
+          </div>
         ))}
       </div>
     </div>

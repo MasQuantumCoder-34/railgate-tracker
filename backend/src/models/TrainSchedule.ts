@@ -5,7 +5,7 @@ export interface ITrainSchedule extends Document {
   trainNumber: string;
   direction: string;
   scheduledTime: string; // "HH:mm" format
-  daysOfWeek: number[]; // 0=Sunday, 1=Monday, ...
+  daysOfWeek: number[];
   estimatedWait: number; // estimated gate closure minutes
   active: boolean;
   createdAt: Date;
@@ -34,7 +34,7 @@ const trainScheduleSchema = new Schema<ITrainSchedule>({
   },
   daysOfWeek: {
     type: [Number],
-    default: [1, 2, 3, 4, 5, 6, 7],
+    default: [0, 1, 2, 3, 4, 5, 6],
   },
   estimatedWait: {
     type: Number,

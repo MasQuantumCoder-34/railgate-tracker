@@ -20,6 +20,7 @@ import feedbackRoutes from './routes/feedback.js';
 import statsRoutes from './routes/stats.js';
 import iotRoutes from './routes/iot.js';
 import scheduleRoutes from './routes/schedule.js';
+import communityRoutes from './routes/community.js';
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/iot', iotRoutes);
 app.use('/api/schedule', scheduleRoutes);
+app.use('/api/community', communityRoutes);
 
 app.use(errorHandler);
 
